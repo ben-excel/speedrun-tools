@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scratch Games from Speedrun.com</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            color: #333;
+            text-transform: uppercase;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Scratch Games on Speedrun.com</h1>
+        <div id="table-container"></div>
+    </div>
+
+    <script>
+        const domain = "scratch.mit.edu";
+        let filteredGames = [];
+        let currentPage = 1;
+
+        function fetchGames(page) {
+            fetch(`https://www.speedrun.com/api/v2/GetGameList?page=${page}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Use "gameList" assuming that's the array in the response
+                    const filteredGamesOnPage = data.gameList.filter(game => game.websiteUrl && game.websiteUrl.includes(domain));
+                    filteredGames.push(...filteredGamesOnPage);
+                    currentPage++;
+                    renderTable();
+
+                    if (currentPage <= data.pagination.pages) {
+                        fetchGames(currentPage);
+                    }
+                })
+                .catch(error => console.error("Error fetching games:", error));
+        }
+
+        function renderTable() {
+            const tableContainer = document.getElementById('table-container');
+            tableContainer.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Speedrun.com Link</th>
+                            <th>Website URL</th>
+                            <th>Release Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filteredGames.map(game => `
+                            <tr>
+                                <td><a href="https://www.speedrun.com/${game.url}" target="_blank">${game.name}</a></td> 
+                                <td><a href="${game.websiteUrl}" target="_blank">${game.websiteUrl}</a></td>
+                                <td>${new Date(game.releaseDate * 1000).toLocaleDateString()}</td> 
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        fetchGames(currentPage);
+    </script>
+</body>
+</html>
