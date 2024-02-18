@@ -72,7 +72,9 @@
                 .then(response => response.json())
                 .then(data => {
                     // Use "gameList" assuming that's the array in the response
-                    const filteredGamesOnPage = data.gameList.filter(game => game.websiteUrl && (game.websiteUrl.includes(domain) || game.websiteUrl.includes(domain2));
+                    const filteredGamesOnPage = data.gameList.filter(game => {
+                        return game.websiteUrl && (game.websiteUrl.includes(domain) || game.websiteUrl.includes(domain2));
+                    });
                     filteredGames.push(...filteredGamesOnPage);
                     currentPage++;
                     renderTable();
