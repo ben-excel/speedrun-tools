@@ -75,7 +75,7 @@
                 .then(data => {
                     // Use "gameList" assuming that's the array in the response
                     const filteredGamesOnPage = data.gameList.filter(game => {
-                        return game.websiteUrl && (game.websiteUrl.includes(domain) || game.websiteUrl.includes(domain2  || game.id === '3dxk2pg1'));
+                        return game.websiteUrl && (game.websiteUrl.includes(domain) || game.websiteUrl.includes(domain2) || game.id === '3dxk2pg1');
                     });
                     filteredGames.push(...filteredGamesOnPage);
                     currentPage++;
