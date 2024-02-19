@@ -59,7 +59,7 @@
 <body>
     <div class="container">
         <h1>Scratch games on Speedrun.com</h1>
-        <p>To add a Scratch game, just add the correct Website URL to the Speedrun.com page.</p>
+        <p>To add a Scratch game, just add its Website URL to the Speedrun.com page.</p>
         <div id="table-container"></div>
     </div>
 
@@ -75,7 +75,7 @@
                 .then(data => {
                     // Use "gameList" assuming that's the array in the response
                     const filteredGamesOnPage = data.gameList.filter(game => {
-                        return game.websiteUrl && (game.websiteUrl.includes(domain) || game.websiteUrl.includes(domain2));
+                        return game.websiteUrl && (game.websiteUrl.includes(domain) || game.websiteUrl.includes(domain2  || game.id === '3dxk2pg1'));
                     });
                     filteredGames.push(...filteredGamesOnPage);
                     currentPage++;
