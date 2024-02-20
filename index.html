@@ -69,6 +69,7 @@
         const domain2 = "turbowarp.org"
         let filteredGames = [];
         let currentPage = 1;
+        let allPagesFetched = false;
 
         function fetchGames(page) {
             fetch(`https://www.speedrun.com/api/v2/GetGameList?page=${page}`)
@@ -83,6 +84,9 @@
 
                     if (currentPage <= data.pagination.pages) {
                         fetchGames(currentPage);
+                    } else {
+                        allPagesFetched = true;
+                        renderTable();
                     }
                 })
                 .catch(error => console.error("Error fetching games:", error));
@@ -117,8 +121,9 @@
             // Set the table HTML content
             tableContainer.innerHTML = tableHtml;
 
-            // Log the HTML code for the table to the console
-            console.log(tableHtml);
+            if (allPagesFetched) {
+                console.log(tableHtml);
+            }
         }
 
         fetchGames(currentPage);
