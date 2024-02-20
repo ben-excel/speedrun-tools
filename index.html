@@ -60,7 +60,8 @@
 <body>
     <div class="container">
         <h1>Scratch games on Speedrun.com</h1>
-        <p>Last updated February 19, 2024.<p>
+        <h3>Last updated February 19, 2024.<h3>
+        <p>This page is static, but I will use the API to update it periodically.
         <p>To add a Scratch game to this list in future updates, just add its Website URL to the Speedrun.com page.</p>
         <div id="table-container">
         
@@ -1513,76 +1514,25 @@
                     <td><a href="https://scratch.mit.edu/projects/690300423/" target="_blank">https://scratch.mit.edu/projects/690300423/</a></td>
                     <td>5/13/2022</td> 
                 </tr>
-            
+      <!--Manually added entries-->
+                <tr>
+                    <td><a href="https://www.speedrun.com/osg" target="_blank">Other Scratch Games</a></td> 
+                    <td>N/A</td>
+                    <td>N/A/td> 
+                </tr>
+
+                <tr>
+                    <td><a href="https://www.speedrun.com/harry_potter_platformer_1_scratch" target="_blank">Harry Potter Platformer 1 (Scratch)</a></td> 
+                    <td><a href="https://scratch.mit.edu/projects/246408773/" target="_blank">https://scratch.mit.edu/projects/246408773/</a></td>
+                    <td>12/18/2020/td> 
+                </tr>              
+
                     </tbody>
                 </table>
             
     </div>
 
-    <script>/*
-        const domain = "scratch.mit.edu";
-        const domain2 = "turbowarp.org"
-        let filteredGames = [];
-        let currentPage = 1;
-        let allPagesFetched = false;
-
-        function fetchGames(page) {
-            fetch(`https://www.speedrun.com/api/v2/GetGameList?page=${page}`)
-                .then(response => response.json())
-                .then(data => {
-                    const filteredGamesOnPage = data.gameList.filter(game => {
-                        return game.websiteUrl && (game.websiteUrl.includes(domain) || game.websiteUrl.includes(domain2) || game.id === '3dxk2pg1');
-                    });
-                    filteredGames.push(...filteredGamesOnPage);
-                    currentPage++;
-                    renderTable();
-
-                    if (currentPage <= data.pagination.pages) {
-                        fetchGames(currentPage);
-                    } else {
-                        allPagesFetched = true;
-                        renderTable();
-                    }
-                })
-                .catch(error => console.error("Error fetching games:", error));
-        }
-
-        function renderTable() {
-            const tableContainer = document.getElementById('table-container');
-            
-            const tableRows = filteredGames.map(game => `
-                <tr>
-                    <td><a href="https://www.speedrun.com/${game.url}" target="_blank">${game.name}</a></td> 
-                    <td><a href="${game.websiteUrl}" target="_blank">${game.websiteUrl}</a></td>
-                    <td>${new Date(game.releaseDate * 1000).toLocaleDateString()}</td> 
-                </tr>
-            `).join('');
-
-            const tableHtml = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Speedrun.com Link</th>
-                            <th>Website URL</th>
-                            <th>Release Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${tableRows}
-                    </tbody>
-                </table>
-            `;
-
-            // Set the table HTML content
-            tableContainer.innerHTML = tableHtml;
-
-            if (allPagesFetched) {
-                console.log(tableHtml);
-            }
-        }
-
-        fetchGames(currentPage);
-    */</script>
+   
 </body>
 </html>
 
