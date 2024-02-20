@@ -56,6 +56,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Scratch games on Speedrun.com</h1>
@@ -73,7 +74,6 @@
             fetch(`https://www.speedrun.com/api/v2/GetGameList?page=${page}`)
                 .then(response => response.json())
                 .then(data => {
-                    // Use "gameList" assuming that's the array in the response
                     const filteredGamesOnPage = data.gameList.filter(game => {
                         return game.websiteUrl && (game.websiteUrl.includes(domain) || game.websiteUrl.includes(domain2) || game.id === '3dxk2pg1');
                     });
@@ -90,7 +90,16 @@
 
         function renderTable() {
             const tableContainer = document.getElementById('table-container');
-            tableContainer.innerHTML = `
+            
+            const tableRows = filteredGames.map(game => `
+                <tr>
+                    <td><a href="https://www.speedrun.com/${game.url}" target="_blank">${game.name}</a></td> 
+                    <td><a href="${game.websiteUrl}" target="_blank">${game.websiteUrl}</a></td>
+                    <td>${new Date(game.releaseDate * 1000).toLocaleDateString()}</td> 
+                </tr>
+            `).join('');
+
+            const tableHtml = `
                 <table>
                     <thead>
                         <tr>
@@ -100,19 +109,20 @@
                         </tr>
                     </thead>
                     <tbody>
-                        ${filteredGames.map(game => `
-                            <tr>
-                                <td><a href="https://www.speedrun.com/${game.url}" target="_blank">${game.name}</a></td> 
-                                <td><a href="${game.websiteUrl}" target="_blank">${game.websiteUrl}</a></td>
-                                <td>${new Date(game.releaseDate * 1000).toLocaleDateString()}</td> 
-                            </tr>
-                        `).join('')}
+                        ${tableRows}
                     </tbody>
                 </table>
             `;
+
+            // Set the table HTML content
+            tableContainer.innerHTML = tableHtml;
+
+            // Log the HTML code for the table to the console
+            console.log(tableHtml);
         }
 
         fetchGames(currentPage);
     </script>
 </body>
 </html>
+
