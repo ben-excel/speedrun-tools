@@ -72,14 +72,14 @@
         let currentPage = 1;
         let allPagesFetched = false;
 
-        /**/
+        /*
         function fetchGames(page) {
             fetch(`https://www.speedrun.com/api/v2/GetGameList?page=${page}`)
                 .then(response => response.json())
                 .then(data => {
                     const filteredGamesOnPage = data.gameList.filter(game => {
-                        //return game.websiteUrl && (game.websiteUrl.includes(domain) || game.websiteUrl.includes(domain2));
-                        return game.websiteUrl && (game.websiteUrl.includes(domain3));
+                        return game.websiteUrl && (game.websiteUrl.includes(domain) || game.websiteUrl.includes(domain2));
+                        //return game.websiteUrl && (game.websiteUrl.includes(domain3));
                     });
                     filteredGames.push(...filteredGamesOnPage);
                     currentPage++;
@@ -94,7 +94,7 @@
                 })
                 .catch(error => console.error("Error fetching games:", error));
         }
-        /**/
+        /*
 
         function renderTable() {
             const tableContainer = document.getElementById('table-container');
