@@ -72,7 +72,7 @@
         let currentPage = 1;
         let allPagesFetched = false;
 
-        /**/
+        /*
         function fetchGames(page) {
             fetch(`https://www.speedrun.com/api/v2/GetGameList?page=${page}`)
                 .then(response => response.json())
@@ -94,7 +94,7 @@
                 })
                 .catch(error => console.error("Error fetching games:", error));
         }
-        /**/
+        */
 
         function renderTable() {
             const tableContainer = document.getElementById('table-container');
