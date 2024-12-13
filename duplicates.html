@@ -5,7 +5,7 @@
 <style>
 body { font-family: sans-serif; }
 #results { margin-top: 20px; }
-.duplicate-group { margin-bottom: 10px; border: 1px solid #ccc; padding: 10px; } /* Added some styling */
+.duplicate-group { margin-bottom: 10px; border: 1px solid #ccc; padding: 10px; }
 </style>
 </head>
 <body>
@@ -13,10 +13,7 @@ body { font-family: sans-serif; }
 <h1>Speedrun Duplicate Finder</h1>
 
 <label for="game-abbr">Game Abbreviation:</label>
-<input type="text" id="game-abbr" placeholder="e.g., sms"><br><br>
-
-<label for="category-id">Category ID (Optional):</label>
-<input type="text" id="category-id" placeholder="e.g., 7kj6g97d"><br><br>
+<input type="text" id="game-abbr" placeholder="e.g., smb1"><br><br>
 
 <button onclick="findDuplicates()">Find Duplicates</button>
 
@@ -35,11 +32,8 @@ async function getGameId(abbreviation) {
     return data.data[0].id;
 }
 
-async function getRuns(gameId, categoryId = null) {
+async function getRuns(gameId) {
     let url = `https://www.speedrun.com/api/v1/runs?game=${gameId}&max=200`;
-    if (categoryId) {
-        url += `&category=${categoryId}`;
-    }
 
     return new Promise(async (resolve, reject) => {
         try {
@@ -63,7 +57,6 @@ async function getRuns(gameId, categoryId = null) {
         }
     });
 }
-
 
 function compareVideos(run1, run2) {
     if (!run1.videos || !run2.videos || !run1.videos.links || !run2.videos.links) {
@@ -91,9 +84,9 @@ function findDuplicateRuns(runs) {
     const duplicates = [];
 
     for (const run of runs) {
-          const runKey = JSON.stringify(
-              [...run.players.map(p => p.rel === 'user' ? p.id : p.name)].sort().concat([run.times.primary, run.category])
-          );
+        const runKey = JSON.stringify(
+            [...run.players.map(p => p.rel === 'user' ? p.id : p.name)].sort().concat([run.times.primary, run.category])
+        );
         if (seenRuns.has(runKey)) {
             const existingRun = seenRuns.get(runKey);
             if (compareVideos(run, existingRun)) {
@@ -106,17 +99,15 @@ function findDuplicateRuns(runs) {
     return duplicates;
 }
 
-
 async function findDuplicates() {
     const gameAbbr = document.getElementById('game-abbr').value;
-    const categoryId = document.getElementById('category-id').value || null;
     const resultsDiv = document.getElementById('results');
 
     resultsDiv.innerHTML = "Loading...";
 
     try {
         const gameId = await getGameId(gameAbbr);
-        const runs = await getRuns(gameId, categoryId);
+        const runs = await getRuns(gameId);
         const duplicateRuns = findDuplicateRuns(runs);
 
         if (duplicateRuns.length > 0) {
