@@ -1,110 +1,84 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Speedrun Duplicate Finder</title>
+<title>Duplicate Run Finder</title>
 <style>
 body { font-family: sans-serif; }
 #results { margin-top: 20px; }
-.duplicate-group { margin-bottom: 10px; }
+.run-link { display: block; }
 </style>
 </head>
 <body>
 
-<h1>Speedrun Duplicate Finder</h1>
+<h1>Duplicate Run Finder</h1>
 
 <label for="game-id">Game ID:</label>
-<input type="text" id="game-id" placeholder="e.g., yd4ov4wd"><br><br>
-
-<label for="category-id">Category ID (Optional):</label>
-<input type="text" id="category-id" placeholder="e.g., 7kj6g97d"><br><br>
-
-<button onclick="findDuplicates()">Find Duplicates</button>
+<input type="text" id="game-id" placeholder="Enter Game ID" value="your_game_id_here">
+<button id="find-duplicates">Find Duplicates</button>
 
 <div id="results"></div>
 
-
 <script>
-function getRuns(gameId, categoryId = null) {
-    let url = `https://www.speedrun.com/api/v1/runs?game=${gameId}&max=200`; // Start with max=200
-    if (categoryId) {
-        url += `&category=${categoryId}`;
+const apiBaseUrl = "https://www.speedrun.com/api/v1";
+
+async function getRuns(gameId, status = "verified", offset = 0) {
+    const url = `${apiBaseUrl}/runs?game=${gameId}&status=${status}&offset=${offset}&max=200`;
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
     }
-
-    return new Promise(async (resolve, reject) => {
-        try {
-            let allRuns = [];
-            let offset = 0;
-            let hasMore = true;
-
-            while (hasMore) {
-                const response = await fetch(url + `&offset=${offset}`);
-                if (!response.ok) {
-                  return reject(`Error fetching runs (HTTP ${response.status} ${response.statusText})`);
-                }
-                const data = await response.json();
-                allRuns = allRuns.concat(data.data);
-                hasMore = data.pagination.size + offset < data.pagination.offset + data.pagination.max;
-                offset = data.pagination.offset + data.pagination.max;
-
-                }
-                resolve(allRuns);
-        } catch (error) {
-            reject(error); 
-        }
-    });
+    return (await response.json()).data;
 }
 
-
-
-function findDuplicateRuns(runs) {
-    const seenRuns = new Map();
-    const duplicates = [];
-
-    for (const run of runs) {
-        const runKey = JSON.stringify(
-            [...run.players.map(p => p.rel === 'user' ? p.id : p.name)].sort().concat([run.times.primary, run.category])
-        );
-
-        if (seenRuns.has(runKey)) {
-            duplicates.push([run, seenRuns.get(runKey)]);
-        } else {
-            seenRuns.set(runKey, run);
-        }
-    }
-    return duplicates;
-}
-
-
-
-
-async function findDuplicates() {
-    const gameId = document.getElementById('game-id').value;
-    const categoryId = document.getElementById('category-id').value || null; // Handle empty input
-    const resultsDiv = document.getElementById('results');
-
-    resultsDiv.innerHTML = "Loading..."; // Show a loading message
+async function findDuplicateRuns() {
+    const gameId = document.getElementById("game-id").value;
+    const resultsDiv = document.getElementById("results");
+    resultsDiv.innerHTML = ""; // Clear previous results
 
     try {
-        const runs = await getRuns(gameId, categoryId);
-        const duplicateRuns = findDuplicateRuns(runs);
+        let allRuns = [];
+        let offset = 0;
+        let batch;
 
-        if (duplicateRuns.length > 0) {
-            let output = "<h2>Duplicate Runs Found:</h2>";
-            for (const [run1, run2] of duplicateRuns) {
-                output += `<div class="duplicate-group">`;
-                output += `<p>Run 1: <a href="${run1.weblink}" target="_blank">${run1.weblink}</a></p>`;
-                output += `<p>Run 2: <a href="${run2.weblink}" target="_blank">${run2.weblink}</a></p>`;
-                output += `</div>`;
+        do {  // Use do...while to ensure at least one request is made.
+            batch = await getRuns(gameId, "verified", offset);
+            allRuns.push(...batch);  // Spread operator to add elements efficiently
+            offset += 200;
+        } while (batch.length === 200)
+
+        const seenRuns = new Map();
+        const duplicates = [];
+
+        for (const run of allRuns) {
+            const playerIds = run.players.filter(p => "id" in p).map(p => p.id).sort();
+            const key = JSON.stringify([playerIds, run.times.primary, run.category]); // Convert to string for Map key
+
+            if (seenRuns.has(key)) {
+                duplicates.push([seenRuns.get(key), run]);
+            } else {
+                seenRuns.set(key, run);
             }
-            resultsDiv.innerHTML = output;
+        }
+
+
+        if (duplicates.length > 0) {
+            resultsDiv.innerHTML = "<h2>Duplicate Runs:</h2>";
+            for (const [run1, run2] of duplicates) {
+                resultsDiv.innerHTML += `<p><a class="run-link" href="${run1.weblink}" target="_blank">${run1.weblink}</a></p>`;
+                resultsDiv.innerHTML += `<p><a class="run-link" href="${run2.weblink}" target="_blank">${run2.weblink}</a></p>`;
+                resultsDiv.innerHTML += "<hr>"; // Separator
+            }
+
         } else {
-            resultsDiv.innerHTML = "<p>No duplicate runs found.</p>";
+            resultsDiv.textContent = "No duplicate runs found.";
         }
     } catch (error) {
-      resultsDiv.innerHTML = `<p style="color: red;">Error: ${error}</p>`;
-      console.error("Error:", error)
+        resultsDiv.textContent = `Error: ${error.message}`;
     }
 }
+
+document.getElementById("find-duplicates").addEventListener("click", findDuplicateRuns);
+
 </script>
 
 </body>
