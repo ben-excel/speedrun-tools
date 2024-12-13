@@ -33,7 +33,7 @@ async function getGameId(abbreviation) {
 }
 
 async function getRuns(gameId) {
-    let url = `https://www.speedrun.com/api/v1/runs?game=${gameId}&max=200`;
+    let url = `https://www.speedrun.com/api/v1/runs?game=${gameId}&max=200&status=verified`;
 
     return new Promise(async (resolve, reject) => {
         try {
