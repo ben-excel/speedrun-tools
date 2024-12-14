@@ -67,7 +67,7 @@ button:hover {
 
 <h1>Speedrun.com Duplicate Run Finder</h1>
 
-<p>Runs are considered duplicates if they have the same player, time, category, and video URL.</p>
+<p>Runs are considered duplicates if they have the same player, time, category, and video URL. Be sure to check for false positives in the results.</p>
 <p>Use the last part of the game's speedrun.com URL to get the abbreviation.</p>
     
 <label for="game-abbr">Game abbreviation:</label>
@@ -240,7 +240,7 @@ async function findDuplicates() {
             }
             resultsDiv.innerHTML = output;
         } else {
-            resultsDiv.innerHTML = `<p>No duplicate runs found in ${gameName}.</p>`;
+            resultsDiv.innerHTML = `<p>No duplicate runs found in <i>${gameName}</i>.</p>`;
         }
     } catch (error) {
         resultsDiv.innerHTML = `<p style="color: red;">Error: ${error}</p>`;
