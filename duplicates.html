@@ -14,17 +14,17 @@ body { font-family: sans-serif; }
 }
 </style>
 </head>
-<body>
+<body onload="init()">
 
 <h1>Speedrun Duplicate Finder</h1>
 
 <p>Find all duplicate runs in a certain game on speedrun.com. Runs are considered duplicates if they have the same player, time, category, and video URL.</p>
-<p>Use the last part of the game's speedrun.com URL to get the 'abbreviation'.</p>
+<p>Use the last part of the game's speedrun.com URL to get the abbreviation.</p>
     
 <label for="game-abbr">Game abbreviation:</label>
 <input type="text" id="game-abbr" placeholder="e.g., smb1"><br><br>
 
-<button onclick="findDuplicates()">Find Duplicates</button>
+<button onclick="findDuplicates()"><b>Find Duplicates</b></button>
 
 <div id="results"></div>
 
@@ -99,6 +99,16 @@ function compareVideos(run1, run2) {
     return true; 
 }
 
+async function init() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const gameAbbr = urlParams.get('game');
+
+    if (gameAbbr) {
+        document.getElementById('game-abbr').value = gameAbbr;
+        findDuplicates(); // Automatically search
+    }
+}
+  
 function findDuplicateRuns(runs) {
     const seenRuns = new Map();
     const duplicates = [];
