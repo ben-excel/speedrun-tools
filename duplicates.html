@@ -221,14 +221,17 @@ async function findDuplicates() {
 
     try {
         const gameId = await getGameId(gameAbbr);
+        const gameResponse = await fetch(`https://www.speedrun.com/api/v1/games/${gameId}`); 
+        const gameData = await gameResponse.json();
+        const gameName = gameData.data.names.international; 
+
         const runs = await getRuns(gameId);
         const duplicateRuns = findDuplicateRuns(runs);
 
         if (duplicateRuns.length > 0) {
-            let output = "<h2>Duplicate Runs Found:</h2>";
+            let output = `<h2>Duplicate runs found in ${gameName}:</h2>`; // Include game name
             for (const [run1, run2] of duplicateRuns) {
                 output += `<div class="duplicate-group">`;
-                // Get player names using getUserName
                 const playerNames1 = await Promise.all(run1.players.map(async p => p.rel === 'user' ? await getUserName(p.id) : p.name));
                 output += `<p>Duplicate ${formatTime(run1.times.primary)} runs by <b>${playerNames1.join(', ')}</b></p>`;
                 output += `<p>Run 1: <a href="${run1.weblink}" target="_blank">${run1.weblink}</a></p>`;
@@ -237,7 +240,7 @@ async function findDuplicates() {
             }
             resultsDiv.innerHTML = output;
         } else {
-            resultsDiv.innerHTML = "<p>No duplicate runs found.</p>";
+            resultsDiv.innerHTML = `<p>No duplicate runs found in ${gameName}.</p>`;
         }
     } catch (error) {
         resultsDiv.innerHTML = `<p style="color: red;">Error: ${error}</p>`;
