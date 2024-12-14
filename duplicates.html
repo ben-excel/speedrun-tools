@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Speedrun Duplicate Finder</title>
+<title>Speedrun.com Duplicate Runs Finder</title>
 <style>
 body { 
   font-family: sans-serif; 
@@ -127,19 +127,9 @@ function compareVideos(run1, run2) {
     }
 
     const normalizeLink = (link) => {
-        let uri = link.uri.toLowerCase();
-
-        // Handle YouTube short URLs and YouTube Shorts
-        if (uri.includes("youtu.be/") || uri.includes("/shorts/")) {
-            const videoId = uri.split(/youtu.be\/|\/shorts\//).pop();
-            uri = `https://www.youtube.com/watch?v=${videoId}`;
-        } else if (uri.includes("youtu.be/")) {
-            uri = "https://www.youtube.com/watch?v=" + uri.split("youtu.be/")[1];
-        }
-
-        // Remove any trailing slashes or query parameters
-        uri = uri.split("?")[0].replace(/\/$/, ""); 
-        return uri;
+        // Remove query parameters and trailing slashes
+        let uri = link.uri.split("?")[0].replace(/\/$/, "");
+        return uri.toLowerCase(); // Ensure case-insensitivity
     };
 
     const links1 = run1.videos.links.map(normalizeLink).sort();
