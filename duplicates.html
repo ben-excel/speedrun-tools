@@ -117,9 +117,8 @@ async function getRuns(gameId) {
 }
 
 function compareVideos(run1, run2) {
-    // If both runs are missing videos, consider them the same
     if (!run1.videos && !run2.videos) {
-        return true;
+        return false;
     }
 
     if (!run1.videos || !run2.videos || !run1.videos.links || !run2.videos.links) {
