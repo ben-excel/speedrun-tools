@@ -126,14 +126,14 @@ function compareVideos(run1, run2) {
         return false;
     }
 
-    const normalizeLink = (link) => {
+    /*const normalizeLink = (link) => {
         // Remove query parameters and trailing slashes
         let uri = link.uri.split("?")[0].replace(/\/$/, "");
         return uri.toLowerCase(); // Ensure case-insensitivity
-    };
+    };*/
 
-    const links1 = run1.videos.links.map(normalizeLink).sort();
-    const links2 = run2.videos.links.map(normalizeLink).sort();
+    const links1 = run1.videos.links.map(link => link.uri).sort();
+    const links2 = run2.videos.links.map(link => link.uri).sort();
 
     if (links1.length !== links2.length) {
         return false;
