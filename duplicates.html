@@ -10,19 +10,18 @@ body { font-family: sans-serif; }
   width: 200px;
   padding: 5px;
   font-size: 16px;
-  font-weight: bold;
   box-sizing: border-box;
 }
 </style>
 </head>
 <body onload="init()">
 
-<h1>Speedrun Duplicate Finder</h1>
+<h1>Speedrun.com Duplicate Run Finder</h1>
 
-<p>Find all duplicate runs in a certain game on speedrun.com. Runs are considered duplicates if they have the same player, time, category, and video URL.</p>
+<p>Runs are considered duplicates if they have the same player, time, category, and video URL.</p>
 <p>Use the last part of the game's speedrun.com URL to get the abbreviation.</p>
     
-<label for="game-abbr">Game abbreviation:</label>
+<label for="game-abbr"><b>Game abbreviation:</b></label>
 <input type="text" id="game-abbr" placeholder="e.g., smb1"><br><br>
 
 <button onclick="findDuplicates()">Find Duplicates</button>
