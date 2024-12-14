@@ -122,11 +122,16 @@ function formatTime(time) {
 
   let formattedTime = "";
   if (hours > 0) {
-    formattedTime += `${hours}:${minutes.toString().padStart(2, '0')}:`;
+    formattedTime += `${hours}h ${minutes.toString().padStart(2, '0')}m`;
   } else {
-    formattedTime += `${minutes}:`;
+    formattedTime += `${minutes}m`;
   }
-  formattedTime += `${seconds.toFixed(3).padStart(5, '0')}`;
+  // Check if seconds have a decimal part and it's not all zeros
+  if (seconds % 1 !== 0) { 
+    formattedTime += `${seconds.toFixed(3).padStart(5, '0')}s`;
+  } else {
+    formattedTime += `${Math.floor(seconds).toString().padStart(2, '0')}s`;
+  }
 
   return formattedTime;
 }
@@ -157,11 +162,9 @@ async function findDuplicates() {
                 output += `<div class="duplicate-group">`;
                 // Get player names using getUserName
                 const playerNames1 = await Promise.all(run1.players.map(async p => p.rel === 'user' ? await getUserName(p.id) : p.name));
-                const playerNames2 = await Promise.all(run2.players.map(async p => p.rel === 'user' ? await getUserName(p.id) : p.name));
-        
+                output += `<p>${playerNames1.join(', ')} - ${formatTime(run1.times.primary)}</p>`;
                 output += `<p>Run 1: <a href="${run1.weblink}" target="_blank">${run1.weblink}</a> by ${playerNames1.join(', ')} - ${formatTime(run1.times.primary)}</p>`;
                 output += `<p>Run 2: <a href="${run2.weblink}" target="_blank">${run2.weblink}</a> by ${playerNames2.join(', ')} - ${formatTime(run2.times.primary)}</p>`;
-                output += `<p>Category: ${run1.category.name}</p>`;
                 output += `</div>`;
             }
             resultsDiv.innerHTML = output;
