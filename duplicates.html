@@ -117,16 +117,26 @@ async function getRuns(gameId) {
 }
 
 function compareVideos(run1, run2) {
+    // If both runs are missing videos, consider them the same
+    if (!run1.videos && !run2.videos) {
+        return true;
+    }
+
     if (!run1.videos || !run2.videos || !run1.videos.links || !run2.videos.links) {
         return false;
     }
 
     const normalizeLink = (link) => {
         let uri = link.uri.toLowerCase();
-        // Handle youtu.be short links
-        if (uri.includes("youtu.be/")) {
+
+        // Handle YouTube short URLs and YouTube Shorts
+        if (uri.includes("youtu.be/") || uri.includes("/shorts/")) {
+            const videoId = uri.split(/youtu.be\/|\/shorts\//).pop();
+            uri = `https://www.youtube.com/watch?v=${videoId}`;
+        } else if (uri.includes("youtu.be/")) {
             uri = "https://www.youtube.com/watch?v=" + uri.split("youtu.be/")[1];
         }
+
         // Remove any trailing slashes or query parameters
         uri = uri.split("?")[0].replace(/\/$/, ""); 
         return uri;
