@@ -146,8 +146,8 @@ async function findDuplicates() {
             let output = "<h2>Duplicate Runs Found:</h2>";
             for (const [run1, run2] of duplicateRuns) {
                 output += `<div class="duplicate-group">`;
-                output += `<p>Run 1: <a href="${run1.weblink}" target="_blank">${run1.weblink}</a> by ${run1.players.map(p => p.rel === 'user' ? p.name).join(', ')} - ${formatTime(run1.times.primary)}</p>`;
-                output += `<p>Run 2: <a href="${run2.weblink}" target="_blank">${run2.weblink}</a> by ${run2.players.map(p => p.rel === 'user' ? p.name).join(', ')} - ${formatTime(run2.times.primary)}</p>`;
+                output += `<p>Run 1: <a href="${run1.weblink}" target="_blank">${run1.weblink}</a> by ${run1.players.map(p => p.name).join(', ')} - ${formatTime(run1.times.primary)}</p>`;
+                output += `<p>Run 2: <a href="${run2.weblink}" target="_blank">${run2.weblink}</a> by ${run2.players.map(p => p.name).join(', ')} - ${formatTime(run2.times.primary)}</p>`;
                 output += `<p>Category: ${run1.category.name}</p>`;
                 output += `</div>`;
             }
