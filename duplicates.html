@@ -110,6 +110,27 @@ function findDuplicateRuns(runs) {
     return duplicates;
 }
 
+function formatTime(time) {
+  const timeParts = time.match(/PT(\d+H)?(\d+M)?(\d+(\.\d+)?)S/);
+  if (!timeParts) {
+    return time; // Return original time if it doesn't match the expected format
+  }
+
+  const hours = timeParts[1] ? parseInt(timeParts[1]) : 0;
+  const minutes = timeParts[2] ? parseInt(timeParts[2]) : 0;
+  const seconds = parseFloat(timeParts[3]);
+
+  let formattedTime = "";
+  if (hours > 0) {
+    formattedTime += `${hours}:${minutes.toString().padStart(2, '0')}:`;
+  } else {
+    formattedTime += `${minutes}:`;
+  }
+  formattedTime += `${seconds.toFixed(3).padStart(5, '0')}`;
+
+  return formattedTime;
+}
+
 async function findDuplicates() {
     const gameAbbr = document.getElementById('game-abbr').value;
     const resultsDiv = document.getElementById('results');
@@ -125,9 +146,9 @@ async function findDuplicates() {
             let output = "<h2>Duplicate Runs Found:</h2>";
             for (const [run1, run2] of duplicateRuns) {
                 output += `<div class="duplicate-group">`;
-                output += `<p>Run 1: <a href="${run1.weblink}" target="_blank">${run1.weblink}</a> by ${run1.players.map(p => p.rel === 'user' ? p.id : p.name).join(', ')} - ${run1.times.primary}</p>`;
-                output += `<p>Run 2: <a href="${run2.weblink}" target="_blank">${run2.weblink}</a> by ${run2.players.map(p => p.rel === 'user' ? p.id : p.name).join(', ')} - ${run2.times.primary}</p>`;
-                output += `<p>Category: <a href="${run1.links.find(link => link.rel === 'category').uri}" target="_blank">${run1.category}</a></p>`;
+                output += `<p>Run 1: <a href="${run1.weblink}" target="_blank">${run1.weblink}</a> by ${run1.players.map(p => p.rel === 'user' ? p.name).join(', ')} - ${formatTime(run1.times.primary)}</p>`;
+                output += `<p>Run 2: <a href="${run2.weblink}" target="_blank">${run2.weblink}</a> by ${run2.players.map(p => p.rel === 'user' ? p.name).join(', ')} - ${formatTime(run2.times.primary)}</p>`;
+                output += `<p>Category: ${run1.category.name}</p>`;
                 output += `</div>`;
             }
             resultsDiv.innerHTML = output;
