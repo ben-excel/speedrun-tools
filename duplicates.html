@@ -245,6 +245,10 @@ async function findDuplicates() {
     } catch (error) {
         resultsDiv.innerHTML = `<p style="color: red;">Error: ${error}</p>`;
         console.error("Error:", error);
+    } finally {
+        // Clear the URL parameters
+        const newUrl = window.location.pathname; 
+        window.history.pushState({}, document.title, newUrl);
     }
 }
 </script>
