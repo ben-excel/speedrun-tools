@@ -56,7 +56,8 @@
 </head>
 <body onload="init()">
     <h1>Speedrun.com Duplicate Run Finder</h1>
-    <p>Runs are considered duplicates if they have the same player(s), category, level, and video URL. Slight differences in time are allowed, so check results carefully for accuracy.</p>
+    <p>Runs are considered duplicates if they have the same player(s), category, level, and video URL.</p>
+    <p>This tool does not check subcategories or variables, so check results carefully for accuracy.</p>
     <p>Use the last part of the game's Speedrun.com URL to get the abbreviation.</p>
     <label for="game-abbr">Game abbreviation:</label>
     <input type="text" id="game-abbr" placeholder="e.g., smb1"><br><br>
@@ -194,7 +195,7 @@
                     for (const [run1, run2] of duplicateRuns) {
                         output += `<div class="duplicate-group">`;
                         const playerNames1 = await Promise.all(run1.players.map(async p => p.rel === 'user' ? await getUserName(p.id) : p.name));
-                        output += `<p>Duplicate runs by <b>${playerNames1.join(', ')}</b></p>`;
+                        output += `<p>Possible duplicate runs by <b>${playerNames1.join(', ')}</b></p>`;
                         output += `<p>Run 1: <a href="${run1.weblink}" target="_blank">${run1.weblink}</a> (${formatTime(run1.times.primary)})</p>`;
                         output += `<p>Run 2: <a href="${run2.weblink}" target="_blank">${run2.weblink}</a> (${formatTime(run2.times.primary)})</p>`;
                         output += `</div>`;
