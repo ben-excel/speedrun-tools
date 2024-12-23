@@ -1,252 +1,216 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Speedrun.com Duplicate Runs Finder</title>
-<style>
-body { 
-  font-family: sans-serif; 
-  margin: 20px;
-}
-
-h1 {
-  margin-bottom: 20px;
-}
-
-#results { 
-  margin-top: 20px; 
-}
-
-.duplicate-group { 
-  margin-bottom: 20px; 
-  border: 1px solid #ccc; 
-  padding: 15px;
-  border-radius: 5px;
-  background-color: #f9f9f9;
-}
-
-.duplicate-group p {
-  margin-bottom: 10px; 
-  margin-top: 10px; 
-}
-
-.duplicate-group p:first-child { 
-  margin-top: 0; 
-}
-
-.duplicate-group p:last-child {
-  margin-bottom: 0; 
-}
-
-#game-abbr {
-  width: 250px;
-  padding: 10px;
-  font-size: 18px;
-  border: 2px solid #ccc;
-  border-radius: 5px;
-  box-sizing: border-box;
-  margin-bottom: 10px;
-}
-
-button {
-  padding: 10px 20px;
-  font-size: 18px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-bottom: 20px; 
-}
-
-button:hover {
-  background-color: #45a049;
-}
-</style>
+    <title>Speedrun.com Duplicate Runs Finder</title>
+    <style>
+        body {  
+            font-family: sans-serif;  
+            margin: 20px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        #results {  
+            margin-top: 20px;  
+        }
+        .duplicate-group {  
+            margin-bottom: 20px;  
+            border: 1px solid #ccc;  
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .duplicate-group p {
+            margin-bottom: 10px;
+            margin-top: 10px;
+        }
+        .duplicate-group p:first-child {  
+            margin-top: 0;
+        }
+        .duplicate-group p:last-child {
+            margin-bottom: 0;
+        }
+        #game-abbr {
+            width: 250px;
+            padding: 10px;
+            font-size: 18px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;  
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body onload="init()">
+    <h1>Speedrun.com Duplicate Run Finder</h1>
+    <p>Runs are considered duplicates if they have the same player(s), category, level, and video URL. Slight differences in time are allowed, so check results carefully for accuracy.</p>
+    <p>Use the last part of the game's Speedrun.com URL to get the abbreviation.</p>
+    <label for="game-abbr">Game abbreviation:</label>
+    <input type="text" id="game-abbr" placeholder="e.g., smb1"><br><br>
+    <button onclick="findDuplicates()">Find Duplicates</button>
+    <div id="results"></div>
+    <script>
+        async function getGameId(abbreviation) {
+            const response = await fetch(`https://www.speedrun.com/api/v1/games?abbreviation=${abbreviation}`);
+            if (!response.ok) {
+                throw new Error(`Error fetching game ID (HTTP ${response.status} ${response.statusText})`);
+            }
+            const data = await response.json();
+            if (data.data.length === 0) {
+                throw new Error("No game found with that abbreviation.");
+            }
+            return data.data[0].id;
+        }
 
-<h1>Speedrun.com Duplicate Run Finder</h1>
+        async function getRuns(gameId) {
+            let url = `https://www.speedrun.com/api/v1/runs?game=${gameId}&max=200&status=verified`;
+            return new Promise(async (resolve, reject) => {
+                try {
+                    let allRuns = [];
+                    let offset = 0;
+                    let hasMore = true;
+                    while (hasMore) {
+                        const response = await fetch(url + `&offset=${offset}`);
+                        if (!response.ok) {
+                            return reject(`Error fetching runs (HTTP ${response.status} ${response.statusText})`);
+                        }
+                        const data = await response.json();
+                        allRuns = allRuns.concat(data.data);
+                        hasMore = data.pagination.size + offset < data.pagination.offset + data.pagination.max;
+                        offset = data.pagination.offset + data.pagination.max;
+                    }
+                    resolve(allRuns);
+                } catch (error) {
+                    reject(error); 
+                }
+            });
+        }
 
-<p>Runs are considered duplicates if they have the same player, category, level, subcategories, and video URL (time is ignored). Be sure to check for false positives in the results.</p>
-<p>Use the last part of the game's speedrun.com URL to get the abbreviation.</p>
-    
-<label for="game-abbr">Game abbreviation:</label>
-<input type="text" id="game-abbr" placeholder="e.g., smb1"><br><br>
+        function compareVideos(run1, run2) {
+            if (!run1.videos && !run2.videos) {
+                return false;
+            }
+            if (!run1.videos || !run2.videos || !run1.videos.links || !run2.videos.links) {
+                return false;
+            }
+            const links1 = run1.videos.links.map(link => link.uri).sort();
+            const links2 = run2.videos.links.map(link => link.uri).sort();
+            if (links1.length !== links2.length) {
+                return false;
+            }
+            for (let i = 0; i < links1.length; i++) {
+                if (links1[i] !== links2[i]) {
+                    return false;
+                }
+            }
+            return true; 
+        }
 
-<button onclick="findDuplicates()">Find Duplicates</button>
+        async function init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const gameAbbr = urlParams.get('game');
+            if (gameAbbr) {
+                document.getElementById('game-abbr').value = gameAbbr;
+                findDuplicates(); 
+            }
+        }
 
-<div id="results"></div>
+        function findDuplicateRuns(runs) {
+            const seenRuns = new Map();
+            const duplicates = [];
+            for (const run of runs) {
+                const runKey = JSON.stringify(
+                    [...run.players.map(p => p.rel === 'user' ? p.id : p.name)].sort().concat([run.category, run.level || null])
+                );
+                if (seenRuns.has(runKey)) {
+                    const existingRun = seenRuns.get(runKey);
+                    if ((run.level || null) === (existingRun.level || null) && compareVideos(run, existingRun)) {
+                        duplicates.push([run, existingRun]);
+                    }
+                } else {
+                    seenRuns.set(runKey, run);
+                }
+            }
+            return duplicates;
+        }
 
-<script>
-async function getGameId(abbreviation) {
-    const response = await fetch(`https://www.speedrun.com/api/v1/games?abbreviation=${abbreviation}`);
-    if (!response.ok) {
-        throw new Error(`Error fetching game ID (HTTP ${response.status} ${response.statusText})`);
-    }
-    const data = await response.json();
-    if (data.data.length === 0) {
-        throw new Error("No game found with that abbreviation.");
-    }
-    return data.data[0].id;
-}
+        function formatTime(time) {
+            const timeParts = time.match(/PT(\d+H)?(\d+M)?(\d+(\.\d+)?)S/);
+            if (!timeParts) {
+                return time; 
+            }
+            const hours = timeParts[1] ? parseInt(timeParts[1]) : 0;
+            const minutes = timeParts[2] ? parseInt(timeParts[2]) : 0;
+            const seconds = parseFloat(timeParts[3]);
+            let formattedTime = "";
+            if (hours > 0) {
+                formattedTime += `${hours}h ${minutes.toString().padStart(2, '0')}m `;
+            } else if (minutes > 0) {
+                formattedTime += `${minutes}m `;
+            }
+            if (seconds % 1 !== 0) { 
+                formattedTime += `${seconds.toFixed(3).padStart(5, '0')}s`;
+            } else {
+                formattedTime += `${Math.floor(seconds).toString().padStart(2, '0')}s`;
+            }
+            return formattedTime;
+        }
 
-async function getRuns(gameId) {
-    let url = `https://www.speedrun.com/api/v1/runs?game=${gameId}&max=200&status=verified`;
+        async function getUserName(userId) {
+            const response = await fetch(`https://www.speedrun.com/api/v1/users/${userId}`);
+            if (!response.ok) {
+                throw new Error(`Error fetching user name (HTTP ${response.status} ${response.statusText})`);
+            }
+            const data = await response.json();
+            return data.data.names.international;
+        }
 
-    return new Promise(async (resolve, reject) => {
-        try {
-            let allRuns = [];
-            let offset = 0;
-            let hasMore = true;
-
-            while (hasMore) {
-                const response = await fetch(url + `&offset=${offset}`);
-                if (!response.ok) {
-                  return reject(`Error fetching runs (HTTP ${response.status} ${response.statusText})`);
-                }
-                const data = await response.json();
-                allRuns = allRuns.concat(data.data);
-                hasMore = data.pagination.size + offset < data.pagination.offset + data.pagination.max;
-                offset = data.pagination.offset + data.pagination.max;
-            }
-            resolve(allRuns);
-        } catch (error) {
-            reject(error); 
-        }
-    });
-}
-
-function compareVideos(run1, run2) {
-    if (!run1.videos && !run2.videos) {
-        return false; 
-    }
-
-    if (!run1.videos || !run2.videos || !run1.videos.links || !run2.videos.links) {
-        return false; 
-    }
-
-    const links1 = run1.videos.links.map(link => link.uri).sort();
-    const links2 = run2.videos.links.map(link => link.uri).sort();
-
-    if (links1.length !== links2.length) {
-        return false; 
-    }
-
-    for (let i = 0; i < links1.length; i++) {
-        if (links1[i] !== links2[i]) {
-            return false; 
-        }
-    }
-
-    return true; 
-}
-
-async function init() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const gameAbbr = urlParams.get('game');
-
-    if (gameAbbr) {
-        document.getElementById('game-abbr').value = gameAbbr;
-        findDuplicates(); 
-    }
-}
-  
-function findDuplicateRuns(runs) {
-    const seenRuns = new Map();
-    const duplicates = [];
-
-    for (const run of runs) {
-        // Construct the key EXCLUDING the time
-        const runKey = JSON.stringify(
-            [...run.players.map(p => p.rel === 'user' ? p.id : p.name)].sort()
-                .concat([run.category, run.level, ...Object.values(run.values).sort()]) 
-        );
-
-        if (seenRuns.has(runKey)) {
-            const existingRun = seenRuns.get(runKey);
-            if (compareVideos(run, existingRun)) {
-                duplicates.push([run, existingRun]);
-            }
-        } else {
-            seenRuns.set(runKey, run);
-        }
-    }
-    return duplicates;
-}
-
-function formatTime(time) {
-  const timeParts = time.match(/PT(\d+H)?(\d+M)?(\d+(\.\d+)?)S/);
-  if (!timeParts) {
-    return time; 
-  }
-
-  const hours = timeParts[1] ? parseInt(timeParts[1]) : 0;
-  const minutes = timeParts[2] ? parseInt(timeParts[2]) : 0;
-  const seconds = parseFloat(timeParts[3]);
-
-  let formattedTime = "";
-  if (hours > 0) {
-    formattedTime += `${hours}h ${minutes.toString().padStart(2, '0')}m `;
-  } else if (minutes > 0) {
-    formattedTime += `${minutes}m `;
-  }
-  if (seconds % 1 !== 0) { 
-    formattedTime += `${seconds.toFixed(3).padStart(5, '0')}s`;
-  } else {
-    formattedTime += `${Math.floor(seconds).toString().padStart(2, '0')}s`;
-  }
-
-  return formattedTime;
-}
-
-async function getUserName(userId) {
-  const response = await fetch(`https://www.speedrun.com/api/v1/users/${userId}`);
-  if (!response.ok) {
-    throw new Error(`Error fetching user name (HTTP ${response.status} ${response.statusText})`);
-  }
-  const data = await response.json();
-  return data.data.names.international; 
-}
-
-async function findDuplicates() {
-    const gameAbbr = document.getElementById('game-abbr').value;
-    const resultsDiv = document.getElementById('results');
-
-    resultsDiv.innerHTML = "Loading...";
-
-    try {
-        const gameId = await getGameId(gameAbbr);
-        const gameResponse = await fetch(`https://www.speedrun.com/api/v1/games/${gameId}`); 
-        const gameData = await gameResponse.json();
-        const gameName = gameData.data.names.international; 
-
-        const runs = await getRuns(gameId);
-        const duplicateRuns = findDuplicateRuns(runs);
-
-        if (duplicateRuns.length > 0) {
-            let output = `<h2>Duplicate runs found in ${gameName}:</h2>`; 
-            for (const [run1, run2] of duplicateRuns) {
-                output += `<div class="duplicate-group">`;
-                const playerNames1 = await Promise.all(run1.players.map(async p => p.rel === 'user' ? await getUserName(p.id) : p.name));
-                output += `<p>Duplicate runs by <b>${playerNames1.join(', ')}</b></p>`; 
-                output += `<p>Run 1: <a href="${run1.weblink}" target="_blank">${run1.weblink}</a> (${formatTime(run1.times.primary)})</p>`; 
-                output += `<p>Run 2: <a href="${run2.weblink}" target="_blank">${run2.weblink}</a> (${formatTime(run2.times.primary)})</p>`; 
-                output += `</div>`;
-            }
-            resultsDiv.innerHTML = output;
-        } else {
-            resultsDiv.innerHTML = `<p>No duplicate runs found in <i>${gameName}</i>.</p>`;
-        }
-    } catch (error) {
-        resultsDiv.innerHTML = `<p style="color: red;">Error: ${error}</p>`;
-        console.error("Error:", error);
-    } finally {
-        // Clear the URL parameters
-        const newUrl = window.location.pathname; 
-        window.history.pushState({}, document.title, newUrl);
-    }
-}
-</script>
-
+        async function findDuplicates() {
+            const gameAbbr = document.getElementById('game-abbr').value;
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = "Loading...";
+            try {
+                const gameId = await getGameId(gameAbbr);
+                const gameResponse = await fetch(`https://www.speedrun.com/api/v1/games/${gameId}`); 
+                const gameData = await gameResponse.json();
+                const gameName = gameData.data.names.international; 
+                const runs = await getRuns(gameId);
+                const duplicateRuns = findDuplicateRuns(runs);
+                if (duplicateRuns.length > 0) {
+                    let output = `<h2>Duplicate runs found in ${gameName}:</h2>`;
+                    for (const [run1, run2] of duplicateRuns) {
+                        output += `<div class="duplicate-group">`;
+                        const playerNames1 = await Promise.all(run1.players.map(async p => p.rel === 'user' ? await getUserName(p.id) : p.name));
+                        output += `<p>Duplicate runs by <b>${playerNames1.join(', ')}</b></p>`;
+                        output += `<p>Run 1: <a href="${run1.weblink}" target="_blank">${run1.weblink}</a> (${formatTime(run1.times.primary)})</p>`;
+                        output += `<p>Run 2: <a href="${run2.weblink}" target="_blank">${run2.weblink}</a> (${formatTime(run2.times.primary)})</p>`;
+                        output += `</div>`;
+                    }
+                    resultsDiv.innerHTML = output;
+                } else {
+                    resultsDiv.innerHTML = `<p>No duplicate runs found in <i>${gameName}</i>.</p>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<p style="color: red;">Error: ${error}</p>`;
+                console.error("Error:", error);
+            } finally {
+                const newUrl = window.location.pathname; 
+                window.history.pushState({}, document.title, newUrl);
+            }
+        }
+    </script>
 </body>
 </html>
