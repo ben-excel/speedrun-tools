@@ -55,9 +55,9 @@
     </style>
 </head>
 <body onload="init()">
-    <h1>Speedrun.com Duplicate Run Finder</h1>
+    <h1>Speedrun.com Duplicate Runs Finder</h1>
     <p>Runs are considered duplicates if they have the same player(s), category, level, and video URL.</p>
-    <p>This tool does not check subcategories or variables, so check results carefully for accuracy.</p>
+    <p>This tool does not check subcategories or variables. Make sure to check if the results are accurate.</p>
     <p>Use the last part of the game's Speedrun.com URL to get the abbreviation.</p>
     <label for="game-abbr">Game abbreviation:</label>
     <input type="text" id="game-abbr" placeholder="e.g., smb1"><br><br>
@@ -191,7 +191,7 @@
                 const runs = await getRuns(gameId);
                 const duplicateRuns = findDuplicateRuns(runs);
                 if (duplicateRuns.length > 0) {
-                    let output = `<h2>Duplicate runs found in ${gameName}:</h2>`;
+                    let output = `<h2>Runs found in ${gameName}:</h2>`;
                     for (const [run1, run2] of duplicateRuns) {
                         output += `<div class="duplicate-group">`;
                         const playerNames1 = await Promise.all(run1.players.map(async p => p.rel === 'user' ? await getUserName(p.id) : p.name));
