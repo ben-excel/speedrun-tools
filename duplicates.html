@@ -77,27 +77,26 @@
         }
 
         async function getRuns(gameId) {
-            let url = `https://www.speedrun.com/api/v1/runs?game=${gameId}&max=200&status=verified`;
-            return new Promise(async (resolve, reject) => {
-                try {
-                    let allRuns = [];
-                    let offset = 0;
-                    let hasMore = true;
-                    while (hasMore) {
-                        const response = await fetch(url + `&offset=${offset}`);
-                        if (!response.ok) {
-                            return reject(`Error fetching runs (HTTP ${response.status} ${response.statusText})`);
-                        }
-                        const data = await response.json();
-                        allRuns = allRuns.concat(data.data);
-                        hasMore = data.pagination.size + offset < data.pagination.offset + data.pagination.max;
-                        offset = data.pagination.offset + data.pagination.max;
+            const url = `https://www.speedrun.com/api/v1/runs?game=${gameId}&max=200&status=verified`;
+            let allRuns = [];
+            let nextPage = url;
+        
+            try {
+                while (nextPage) {
+                    const response = await fetch(nextPage);
+                    if (!response.ok) {
+                        throw new Error(`Error fetching runs (HTTP ${response.status} ${response.statusText})`);
                     }
-                    resolve(allRuns);
-                } catch (error) {
-                    reject(error); 
+                    const data = await response.json();
+                    allRuns = allRuns.concat(data.data);
+        
+                    // Check if there is a next page
+                    nextPage = data.pagination.links.find(link => link.rel === "next")?.uri || null;
                 }
-            });
+                return allRuns;
+            } catch (error) {
+                throw new Error(`Failed to retrieve runs: ${error.message}`);
+            }
         }
 
         function compareVideos(run1, run2) {
