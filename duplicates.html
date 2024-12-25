@@ -178,7 +178,7 @@
                 return data.data.names.international;
             } catch (error) {
                 console.warn(`Failed to fetch username for user ID ${userId}. Using user ID as fallback. Error: ${error.message}`);
-                return userId;
+                return `User ID: ${userId}`;
             }
         }
 
