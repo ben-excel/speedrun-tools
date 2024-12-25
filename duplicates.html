@@ -80,22 +80,24 @@
             const url = `https://www.speedrun.com/api/v1/runs?game=${gameId}&max=200&status=verified`;
             let allRuns = [];
             let nextPage = url;
-
+        
             try {
                 while (nextPage) {
                     const response = await fetch(nextPage);
                     if (!response.ok) {
-                        throw new Error(`Error fetching runs (HTTP ${response.status} ${response.statusText})`);
+                        console.error(`Error fetching runs (HTTP ${response.status} ${response.statusText}). Proceeding with collected data.`);
+                        break; // Stop fetching more pages and return what we have
                     }
                     const data = await response.json();
                     allRuns = allRuns.concat(data.data);
-
+        
                     nextPage = data.pagination.links.find(link => link.rel === "next")?.uri || null;
                 }
-                return allRuns;
             } catch (error) {
-                throw new Error(`Failed to retrieve runs: ${error.message}`);
+                console.error(`An error occurred during pagination: ${error.message}. Proceeding with collected data.`);
             }
+        
+            return allRuns;
         }
 
         function compareVideos(run1, run2) {
