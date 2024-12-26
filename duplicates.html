@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Speedrun.com Duplicate Runs Finder</title>
+    <title>Duplicate Runs Finder</title>
     <style>
         body {  
             font-family: sans-serif;  
@@ -195,6 +195,8 @@
                 const gameVariables = await getGameVariables(gameId);
 
                 const duplicateRuns = findDuplicateRuns(runs, gameVariables);
+
+                console.log(`Found ${duplicateRuns.length} potential duplicate pairs in ${gameName}.`);
 
                 if (duplicateRuns.length > 0) {
                     let output = `<h2>Runs found in ${gameName}:</h2>`;
