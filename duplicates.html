@@ -101,10 +101,10 @@
         }
 
         function compareVideos(run1, run2) {
-            if (!run1.videos && !run2.videos) {
-                return true; //Consider runs without videos as potentially matching
+            if (!run1.videos || !run2.videos) {
+                return false; 
             }
-            if (!run1.videos || !run2.videos || !run1.videos.links || !run2.videos.links) {
+            if (!run1.videos.links || !run2.videos.links) {
                 return false;
             }
             const links1 = run1.videos.links.map(link => link.uri).sort();
