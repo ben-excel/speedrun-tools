@@ -57,7 +57,7 @@
 <body onload="init()">
     <h1>Speedrun.com Duplicate Runs Finder</h1>
     <p>Runs are considered 'potential duplicates' if they have the same player(s), category, subcategories, and video URL.</p>
-    <p>Make sure to check if the results are actually duplicates, like when different runs are submitted with the same video.</p>
+    <p>Make sure to check if the results are actually duplicates. False positives may occur if different runs are submitted with the same video.</p>
     <p>Use the last part of the game's Speedrun.com URL to get the abbreviation.</p>
     <label for="game-abbr">Game abbreviation:</label>
     <input type="text" id="game-abbr" placeholder="e.g., smb1"><br><br>
@@ -196,7 +196,7 @@
 
                 const duplicateRuns = findDuplicateRuns(runs, gameVariables);
 
-                console.log(`Found ${duplicateRuns.length} potential duplicate pairs in ${gameName}.`);
+                console.log(`Found ${duplicateRuns.length} pairs of potential duplicate runs in ${gameName}.`);
 
                 if (duplicateRuns.length > 0) {
                     let output = `<h2>Runs found in ${gameName}:</h2>`;
