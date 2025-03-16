@@ -58,7 +58,7 @@
     <h1>Speedrun.com Duplicate Runs Finder</h1>
     <p>Runs are considered 'potential duplicates' if they have the same player(s), category, subcategories, and video URL.</p>
     <p>Make sure to check if the results are actually duplicates. False positives may occur if different runs are submitted with the same video.</p>
-    <p>Use the last part of the game's Speedrun.com URL to get the abbreviation.</p>
+    <p>Use the last part of the game's Speedrun.com URL to get the abbreviation. If you add '?game=' and then the abbreviation to this URL</p>
     <label for="game-abbr">Game abbreviation:</label>
     <input type="text" id="game-abbr" placeholder="e.g., smb1"><br><br>
     <button onclick="findDuplicates()">Find Duplicates</button>
@@ -216,8 +216,9 @@
                 resultsDiv.innerHTML = `<p style="color: red;">Error: ${error}</p>`;
                 console.error("Error:", error);
             } finally {
-                const newUrl = window.location.pathname;
-                window.history.pushState({}, document.title, newUrl);
+                const gameAbbr = document.getElementById('game-abbr').value; // Get the current game abbreviation from the input
+                const newUrl = `${window.location.pathname}?game=${gameAbbr}`; // Construct the new URL
+                window.history.pushState({}, document.title, newUrl); // Update the URL
             }
         }
 
